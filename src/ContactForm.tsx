@@ -1,26 +1,6 @@
 import { useForm } from '@tanstack/react-form';
-import { contactFormSchema, type ContactFormData } from './validation';
-
-async function submitForm(
-  data: ContactFormData
-): Promise<{ success: boolean; errors?: Partial<Record<keyof ContactFormData, string>> }> {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  const result = contactFormSchema.safeParse(data);
-
-  if (!result.success) {
-    const errors: Partial<Record<keyof ContactFormData, string>> = {};
-    for (const issue of result.error.issues) {
-      const field = issue.path[0] as keyof ContactFormData;
-      if (!errors[field]) {
-        errors[field] = issue.message;
-      }
-    }
-    return { success: false, errors };
-  }
-
-  return { success: true };
-}
+import { validateForm, submitForm } from './api';
+import type { ContactFormData } from './validation';
 
 export function ContactForm() {
   const form = useForm({
@@ -30,20 +10,20 @@ export function ContactForm() {
       subject: '',
       message: '',
     } as ContactFormData,
-    validators: {
-      onSubmitAsync: async ({ value }) => {
-        const result = await submitForm(value);
+    onSubmit: async ({ value }) => {
+      const validationResponse = await validateForm(value);
 
-        if (!result.success && result.errors) {
-          return {
-            fields: result.errors,
-          };
+      if (!validationResponse.success) {
+        for (const [field, message] of Object.entries(validationResponse.errors)) {
+          form.setFieldMeta(field as keyof ContactFormData, (prev) => ({
+            ...prev,
+            errorMap: { onSubmit: message },
+          }));
         }
+        return;
+      }
 
-        return undefined;
-      },
-    },
-    onSubmit: async () => {
+      await submitForm(validationResponse.data);
       alert('Message sent successfully!');
       form.reset();
     },
@@ -154,7 +134,7 @@ export function ContactForm() {
             disabled={isSubmitting}
             className="w-full py-3 font-medium text-white bg-indigo-500 rounded hover:bg-indigo-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? 'Validating...' : 'Send Message'}
+            {isSubmitting ? 'Sending...' : 'Send Message'}
           </button>
         )}
       </form.Subscribe>
