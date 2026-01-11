@@ -35,7 +35,6 @@ export function ContactForm() {
         const result = await submitForm(value);
 
         if (!result.success && result.errors) {
-          // Return field errors to TanStack Form
           return {
             fields: result.errors,
           };
