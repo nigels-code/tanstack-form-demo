@@ -1,15 +1,10 @@
 import { useForm } from '@tanstack/react-form';
 import { validateForm, submitForm } from './api';
-import type { ContactFormData } from './validation';
+import { defaultContactFormData, type ContactFormData } from './validation';
 
 export function ContactForm() {
   const form = useForm({
-    defaultValues: {
-      name: '',
-      email: '',
-      subject: '',
-      message: '',
-    } as ContactFormData,
+    defaultValues: defaultContactFormData,
     onSubmit: async ({ value }) => {
       const validationResponse = await validateForm(value);
 
