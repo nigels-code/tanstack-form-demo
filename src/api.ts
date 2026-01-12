@@ -1,9 +1,11 @@
 import { contactFormSchema, type ContactFormData } from './validation';
 
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export async function validateForm(
-  data: ContactFormData
+  data: unknown
 ): Promise<{ success: true; data: ContactFormData } | { success: false; errors: Partial<Record<keyof ContactFormData, string>> }> {
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  await delay(500);
 
   const result = contactFormSchema.safeParse(data);
 
@@ -22,6 +24,5 @@ export async function validateForm(
 }
 
 export async function submitForm(data: ContactFormData): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, 200));
   console.log('Form submitted:', data);
 }
